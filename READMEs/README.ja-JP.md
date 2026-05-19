@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <a href="../README.md">English</a> | <a href="README.zh-CN.md">简体中文</a> | <a href="README.zh-TW.md">繁體中文</a> | <a href="README.ja-JP.md">日本語</a> | <a href="README.ko-KR.md">한국어</a> | <a href="README.es-ES.md">Español</a> | <a href="README.tr-TR.md">Türkçe</a>
+  <a href="../README.md">English</a> | <a href="README.zh-CN.md">简体中文</a> | <a href="README.zh-TW.md">繁體中文</a> | <a href="README.ja-JP.md">日本語</a> | <a href="README.ko-KR.md">한국어</a> | <a href="README.es-ES.md">Español</a> | <a href="README.tr-TR.md">Türkçe</a> | <a href="README.ru-RU.md">Русский</a>
 </p>
 
 <p align="center">
@@ -118,7 +118,7 @@ Understand Anything は [Claude Code Plugin](https://code.claude.com/docs/en/plu
 # 日本語でコンテンツを生成（ナレッジグラフのノード説明とダッシュボードUI）
 /understand --language ja
 
-# サポート言語：en（デフォルト）、zh、zh-TW、ja、ko
+# サポート言語：en（デフォルト）、zh、zh-TW、ja、ko、ru
 ```
 
 `--language` パラメータは以下に影響します：
