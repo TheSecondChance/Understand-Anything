@@ -327,4 +327,46 @@ describe("DartExtractor", () => {
       parser.delete();
     });
   });
+
+  describe("extractStructure - visibility", () => {
+    it("does NOT export a top-level declaration whose name starts with _", () => {
+      const { tree, parser, root } = parse(`int _helper() => 1;
+class _PrivateImpl {}
+`);
+      const result = extractor.extractStructure(root);
+
+      const names = result.exports.map((e) => e.name);
+      expect(names).not.toContain("_helper");
+      expect(names).not.toContain("_PrivateImpl");
+      tree.delete();
+      parser.delete();
+    });
+
+    it("DOES export a top-level declaration without an underscore prefix", () => {
+      const { tree, parser, root } = parse(`int helper() => 1;
+class Public {}
+`);
+      const result = extractor.extractStructure(root);
+
+      const names = result.exports.map((e) => e.name);
+      expect(names).toEqual(expect.arrayContaining(["helper", "Public"]));
+      tree.delete();
+      parser.delete();
+    });
+
+    it("does NOT export class members whose names start with _", () => {
+      const { tree, parser, root } = parse(`class Counter {
+  void _helper() {}
+  void publicMethod() {}
+}
+`);
+      const result = extractor.extractStructure(root);
+
+      const names = result.exports.map((e) => e.name);
+      expect(names).toContain("publicMethod");
+      expect(names).not.toContain("_helper");
+      tree.delete();
+      parser.delete();
+    });
+  });
 });
