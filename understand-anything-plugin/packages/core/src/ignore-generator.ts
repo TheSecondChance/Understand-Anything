@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, type Dirent } from "node:fs";
 import { join } from "node:path";
 import { DEFAULT_IGNORE_PATTERNS } from "./ignore-filter.js";
 
@@ -13,7 +13,9 @@ const HEADER = `# .understandignore — patterns for files/dirs to exclude from 
 `;
 
 // Directory names matched case-insensitively against the on-disk entry name.
-// Includes JS/TS, Python, and PascalCase variants seen in C#/.NET projects.
+// Mixes ecosystem conventions: __tests__ (JS), test/tests (multi), testdata
+// (Go), .storybook (JS), and PascalCase variants (UnitTests/IntegrationTests)
+// commonly seen in C#/.NET projects.
 const EXACT_DIR_NAMES = [
   "__tests__",
   "test",
@@ -29,8 +31,11 @@ const EXACT_DIR_NAMES = [
   "integrationtests",
 ];
 
-// Directory-name suffixes matched case-insensitively. Covers C# / .NET
-// project-suffix conventions like Foo.Tests, Foo.UnitTests, Foo.IntegrationTests.
+// Directory-name suffixes matched case-insensitively via String.endsWith.
+// Primarily intended for C# / .NET project-suffix conventions like Foo.Tests,
+// Foo.UnitTests, Foo.IntegrationTests, but note the match is unanchored —
+// e.g. a hypothetical `.storybook.tests` would also match. Suggestions stay
+// commented-out so the user reviews before activating.
 const SUFFIX_DIR_GLOBS = [
   ".tests",
   ".unittests",
@@ -96,9 +101,9 @@ function isCoveredByDefaults(pattern: string): boolean {
  * Returns patterns using the directory's actual on-disk casing.
  */
 function detectDirectories(projectRoot: string): string[] {
-  let entries: ReturnType<typeof readdirSync>;
+  let entries: Dirent[];
   try {
-    entries = readdirSync(projectRoot, { withFileTypes: true });
+    entries = readdirSync(projectRoot, { withFileTypes: true, encoding: "utf-8" });
   } catch {
     return [];
   }

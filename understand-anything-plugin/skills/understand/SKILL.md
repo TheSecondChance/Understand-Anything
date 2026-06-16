@@ -200,50 +200,9 @@ Determine whether to run a full analysis or incremental update.
 Set up and verify the `.understandignore` file before scanning.
 
 1. Check if `$PROJECT_ROOT/.understand-anything/.understandignore` exists.
-2. **If it does NOT exist**, generate a starter file:
-   - Run the following Node.js one-liner in `$PROJECT_ROOT` (reads `.gitignore` and deduplicates against built-in defaults):
+2. **If it does NOT exist**, generate a starter file by invoking the bundled script (delegates to `generateStarterIgnoreFile` in `@understand-anything/core`, which reads `.gitignore`, deduplicates against built-in defaults, and emits language-grouped test-file suggestions):
      ```bash
-     node -e "
-     const fs = require('fs');
-     const path = require('path');
-     const root = process.cwd();
-     const defaults = ['node_modules/','node_modules','.git/','vendor/','venv/','.venv/','__pycache__/','dist/','dist','build/','build','out/','coverage/','coverage','.next/','.cache/','.turbo/','target/','obj/','*.lock','package-lock.json','yarn.lock','pnpm-lock.yaml','*.png','*.jpg','*.jpeg','*.gif','*.svg','*.ico','*.woff','*.woff2','*.ttf','*.eot','*.mp3','*.mp4','*.pdf','*.zip','*.tar','*.gz','*.min.js','*.min.css','*.map','*.generated.*','.idea/','.vscode/','LICENSE','.gitignore','.editorconfig','.prettierrc','.eslintrc*','*.log'];
-     const norm = p => p.replace(/\/+$/, '');
-     const defaultSet = new Set(defaults.map(norm));
-     const header = '# .understandignore — patterns for files/dirs to exclude from analysis\n# Syntax: same as .gitignore (globs, # comments, ! negation, trailing / for dirs)\n# Lines below are suggestions — uncomment to activate.\n# Use ! prefix to force-include something excluded by defaults.\n#\n# Built-in defaults (always excluded unless negated):\n#   node_modules/, .git/, dist/, build/, obj/, *.lock, *.min.js, etc.\n#\n';
-     let body = '';
-     const gitignorePath = path.join(root, '.gitignore');
-     if (fs.existsSync(gitignorePath)) {
-       const gi = fs.readFileSync(gitignorePath, 'utf-8').split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#')).filter(p => !defaultSet.has(norm(p)));
-       if (gi.length) { body += '# --- From .gitignore (uncomment to exclude) ---\n\n' + gi.map(p => '# ' + p).join('\n') + '\n\n'; }
-     }
-     const exactDirs = ['__tests__','test','tests','fixtures','testdata','docs','examples','scripts','migrations','.storybook','unittests','integrationtests'];
-     const suffixDirs = ['.tests','.unittests','.integrationtests'];
-     const found = [];
-     try {
-       for (const ent of fs.readdirSync(root, { withFileTypes: true })) {
-         if (!ent.isDirectory()) continue;
-         const lower = ent.name.toLowerCase();
-         if (exactDirs.includes(lower) || suffixDirs.some(s => lower.endsWith(s))) {
-           found.push(ent.name);
-         }
-       }
-     } catch {}
-     if (found.length) { body += '# --- Detected directories (uncomment to exclude) ---\n\n' + found.map(d => '# ' + d + '/').join('\n') + '\n\n'; }
-     const patternGroups = [
-       ['JS / TS', ['*.test.*','*.spec.*','*.snap']],
-       ['C# / .NET', ['**/*Tests.cs','**/*Test.cs','**/*Fixture.cs','**/*.Tests.csproj']],
-       ['Java / Kotlin', ['**/src/test/**','**/*Test.java','**/*IT.java','**/*Spec.kt']],
-       ['Go', ['**/*_test.go']],
-     ];
-     body += '# --- Test file patterns (uncomment to exclude) ---\n\n';
-     for (const [label, pats] of patternGroups) {
-       body += '# ' + label + '\n' + pats.map(p => '# ' + p).join('\n') + '\n';
-     }
-     const outDir = path.join(root, '.understand-anything');
-     if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
-     fs.writeFileSync(path.join(outDir, '.understandignore'), header + body);
-     "
+     node <SKILL_DIR>/generate-ignore.mjs $PROJECT_ROOT
      ```
    - Report to the user:
      > Generated `.understand-anything/.understandignore` with suggested exclusions based on your project structure. Please review it and uncomment any patterns you'd like to exclude from analysis. When ready, confirm to continue.
